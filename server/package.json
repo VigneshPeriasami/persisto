@@ -1,0 +1,8 @@
+{
+  "name": "persisto-server",
+  "version": "1.0.0",
+  "description": "Persisto server",
+  "main": "index.js",
+  "author": "Vignesh Periasami",
+  "license": "ISC"
+}

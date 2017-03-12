@@ -1,5 +1,5 @@
 package com.github.vigneshperiasami.persisto.client;
 
-public interface Decoder<T> {
-  T decode(String raw);
+public interface Encoder<T> {
+  String encode(T data);
 }

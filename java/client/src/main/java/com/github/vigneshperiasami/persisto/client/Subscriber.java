@@ -8,7 +8,6 @@ public abstract class Subscriber<T> implements Subscription {
   protected abstract void onNext(T data);
 
   protected void onError(Throwable err) {
-
   }
 
   public void unsubscribe() {

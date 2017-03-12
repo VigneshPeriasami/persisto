@@ -1,8 +1,8 @@
 package com.github.vigneshperiasami.persisto.client;
 
-class ChannelObservableFactory {
-  public static <T> ChannelObservable<T> untilAlive(final LoopCall<T> loopCall) {
-    return new ChannelObservable<T>() {
+class ChannelReaderFactory {
+  public static <T> ChannelReader<T> untilAlive(final LoopCall<T> loopCall) {
+    return new ChannelReader<T>() {
       @Override
       public Subscription listen(Subscriber<T> subscriber) {
         while (subscriber.isAlive()) {
@@ -10,6 +10,7 @@ class ChannelObservableFactory {
             subscriber.onNext(loopCall.next());
           } catch (Exception e) {
             subscriber.onError(e);
+            subscriber.unsubscribe();
           }
         }
         return subscriber;

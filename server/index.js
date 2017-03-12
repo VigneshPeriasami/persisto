@@ -7,6 +7,10 @@ const encode = (message) => {
   return Buffer.from(message).toString("base64");
 };
 
+const decode = (message) => {
+  return Buffer.from(message, "base64").toString();
+};
+
 const bundle = (message) => {
   return encode(message) + "\n";
 };
@@ -17,6 +21,9 @@ const write = (socket, message) => {
 };
 
 net.createServer((socket) => {
+  socket.on("data", (chunk) => {
+    console.log(decode(chunk.toString()));
+  });
   socket.name = socket.remoteAddress + ":" + socket.remotePort;
   clients.push(socket);
   write(socket, "Connected to Persisto");

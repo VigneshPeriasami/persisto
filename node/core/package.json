@@ -1,7 +1,7 @@
 {
-  "name": "persisto-server",
+  "name": "persisto",
   "version": "1.0.0",
-  "description": "Persisto server",
+  "description": "A simple lightweight socket communication",
   "main": "index.js",
   "author": "Vignesh Periasami",
   "license": "ISC"

@@ -1,6 +1,2 @@
 rootProject.name = 'persisto'
-includeFlat 'client'
-findProject(':client')?.name = 'persisto.client'
-include 'client'
-include 'sample'
-
+include ':core', ':sample'

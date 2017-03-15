@@ -32,13 +32,9 @@ public class Persisto {
       final BufferedWriter writer = writer();
 
       @Override
-      public void push(String message) {
-        try {
-          writer.write(message);
-          writer.flush();
-        } catch (Exception ignored) {
-
-        }
+      public void push(String message) throws Exception {
+        writer.write(message);
+        writer.flush();
       }
     };
   }

@@ -1,5 +1,7 @@
 package com.github.vigneshperiasami.persisto.client;
 
+import java.util.concurrent.Callable;
+
 class FlowableFactory {
 
   static void safeStop(PullFunc pullFunc) {
@@ -9,13 +11,13 @@ class FlowableFactory {
     }
   }
 
-  static <T> Flowable<T> untilAlive(final PullFuncGen<T> pullFuncGen) {
+  static <T> Flowable<T> untilAlive(final Callable<PullFunc<T>> pullFuncGen) {
     return new Flowable<T>() {
       @Override
       public void listen(Subscriber<T> subscriber) {
         PullFunc<T> pullFunc = null;
         try {
-          pullFunc = pullFuncGen.create();
+          pullFunc = pullFuncGen.call();
 
           while (subscriber.isAlive()) {
               subscriber.onNext(pullFunc.next());
@@ -28,10 +30,6 @@ class FlowableFactory {
         }
       }
     };
-  }
-
-  interface PullFuncGen<T> {
-    PullFunc<T> create() throws Exception;
   }
 
   interface PullFunc<T> {

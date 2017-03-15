@@ -18,7 +18,7 @@ public abstract class Subject<T> {
 
     @Override
     public void push(C message) {
-      subject.push(ROperator.encode(message));
+      subject.push(ROperator.call(message));
     }
   }
 

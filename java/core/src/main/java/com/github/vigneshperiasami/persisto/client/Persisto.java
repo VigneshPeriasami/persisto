@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.concurrent.Callable;
 
 public class Persisto {
   private final Socket socket;
@@ -43,9 +44,9 @@ public class Persisto {
   }
 
   public Flowable<String> readFlowable() throws IOException {
-    return FlowableFactory.untilAlive(new FlowableFactory.PullFuncGen<String>() {
+    return FlowableFactory.untilAlive(new Callable<FlowableFactory.PullFunc<String>>() {
       @Override
-      public FlowableFactory.PullFunc<String> create() throws Exception {
+      public FlowableFactory.PullFunc<String> call() throws Exception {
         final BufferedReader reader = reader();
 
         return new FlowableFactory.PullFunc<String>() {

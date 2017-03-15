@@ -2,7 +2,7 @@ package com.github.vigneshperiasami.persisto.client;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class Subscriber<T> implements Subscription {
+public abstract class Subscriber<T> {
   private AtomicBoolean isAlive = new AtomicBoolean(true);
 
   public abstract void onNext(T data);

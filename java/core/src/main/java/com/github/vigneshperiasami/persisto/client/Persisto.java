@@ -26,24 +26,42 @@ public class Persisto {
     return new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
   }
 
-  public <T> ChannelWriter<T> createWriter(final Encoder<T> encoder) throws IOException {
-    final BufferedWriter writer = writer();
-    return new ChannelWriter<T>() {
+  public Subject<String> writeSubject() throws IOException {
+    return new Subject<String>() {
+      final BufferedWriter writer = writer();
+
       @Override
-      public void write(T message) throws IOException {
-        writer.write(encoder.encode(message));
-        writer.flush();
+      public void push(String message) {
+        try {
+          writer.write(message);
+          writer.flush();
+        } catch (Exception ignored) {
+
+        }
       }
     };
   }
 
-  public <T> ChannelReader<T> createReader(final Decoder<T> decoder) throws IOException {
-    final BufferedReader reader = reader();
-
-    return ChannelReaderFactory.untilAlive(new ChannelReaderFactory.LoopCall<T>() {
+  public Flowable<String> readFlowable() throws IOException {
+    return FlowableFactory.untilAlive(new FlowableFactory.PullFuncGen<String>() {
       @Override
-      public T next() throws Exception {
-        return decoder.decode(reader.readLine());
+      public FlowableFactory.PullFunc<String> create() throws Exception {
+        final BufferedReader reader = reader();
+
+        return new FlowableFactory.PullFunc<String>() {
+          @Override
+          public String next() throws Exception {
+            return reader.readLine();
+          }
+
+          @Override
+          public void stop() {
+            try {
+              reader.close();
+            } catch (IOException ignored) {
+            }
+          }
+        };
       }
     });
   }

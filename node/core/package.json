@@ -1,7 +1,7 @@
 {
   "name": "persisto",
   "version": "1.0.0",
-  "description": "A simple lightweight socket communication",
+  "description": "Simple and lightweight api for socket programming",
   "main": "index.js",
   "author": "Vignesh Periasami",
   "license": "ISC"

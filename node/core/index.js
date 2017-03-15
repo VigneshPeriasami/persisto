@@ -5,19 +5,19 @@ const net = require("net");
 const Persisto = {};
 
 Persisto.createReader = (socket, decodeFunc) => {
-  const reader = (onNext) => {
+  const listen = (onNext) => {
     socket.on("data", (chunk) => {
       onNext(decodeFunc(chunk.toString()));
     });
   };
-  return Object.assign({}, { listen: reader });
+  return Object.assign({}, { listen });
 };
 
 Persisto.createWriter = (socket, encodeFunc) => {
-  const writer = (message) => {
+  const write = (message) => {
     socket.write(encodeFunc(message));
   };
-  return Object.assign({}, { write: writer });
+  return Object.assign({}, { write });
 };
 
 Persisto.createInstance = (socket) => {
@@ -29,8 +29,8 @@ Persisto.createInstance = (socket) => {
   };
 
   return Object.assign({},
-    { createWriter: createWriter, createReader: createReader },
-    { socket: socket });
+    { createWriter, createReader },
+    { socket });
 };
 
 Persisto.connect = (port, onConnect) => {

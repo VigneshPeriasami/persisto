@@ -8,11 +8,15 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
-public class Persisto {
+public class Persisto implements AutoCloseable {
   private final Socket socket;
+  private final BufferedReader reader;
+  private final BufferedWriter writer;
 
-  private Persisto(Socket socket) {
+  private Persisto(Socket socket) throws IOException {
     this.socket = socket;
+    this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    this.writer =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
   }
 
   public static Persisto connect(String host, int port) throws IOException {
@@ -20,11 +24,18 @@ public class Persisto {
   }
 
   private BufferedReader reader() throws IOException {
-    return new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    return reader;
   }
 
   private BufferedWriter writer() throws IOException {
-    return new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+    return writer;
+  }
+
+  @Override
+  public void close() throws IOException {
+    reader.close();
+    writer.close();
+    socket.close();
   }
 
   public Subject<String> writeSubject() throws IOException {

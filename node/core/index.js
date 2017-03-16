@@ -1,41 +1,41 @@
 "use strict";
 
 const net = require("net");
+const flowable = require("./flowable");
+const subject = require("./subject");
 
 const Persisto = {};
 
-Persisto.createReader = (socket, decodeFunc) => {
-  const listen = (onNext) => {
+Persisto.readFlowable = (socket) => {
+  return flowable((onNext) => {
     socket.on("data", (chunk) => {
-      onNext(decodeFunc(chunk.toString()));
+      onNext(chunk.toString());
     });
-  };
-  return Object.assign({}, { listen });
+  });
 };
 
-Persisto.createWriter = (socket, encodeFunc) => {
-  const write = (message) => {
-    socket.write(encodeFunc(message));
-  };
-  return Object.assign({}, { write });
+Persisto.writeSubject = (socket) => {
+  return subject((message) => {
+    socket.write(message);
+  });
 };
 
-Persisto.createInstance = (socket) => {
-  const createWriter = (encodeFunc) => {
-    return Persisto.createWriter(socket, encodeFunc);
+Persisto.create = (socket) => {
+  const writeSubject = () => {
+    return Persisto.writeSubject(socket);
   };
-  const createReader = (decodeFunc) => {
-    return Persisto.createReader(socket, decodeFunc);
+  const readFlowable = () => {
+    return Persisto.readFlowable(socket);
   };
 
   return Object.assign({},
-    { createWriter, createReader },
+    { writeSubject, readFlowable },
     { socket });
 };
 
 Persisto.connect = (port, onConnect) => {
   net.createServer((socket) => {
-    onConnect(Persisto.createInstance(socket));
+    onConnect(Persisto.create(socket));
   }).listen(port);
 };
 

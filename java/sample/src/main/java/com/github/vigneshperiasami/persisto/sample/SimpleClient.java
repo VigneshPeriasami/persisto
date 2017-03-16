@@ -1,17 +1,16 @@
 package com.github.vigneshperiasami.persisto.sample;
 
-import com.github.vigneshperiasami.persisto.client.ROperator;
 import com.github.vigneshperiasami.persisto.client.Flowable;
 import com.github.vigneshperiasami.persisto.client.Operator;
 import com.github.vigneshperiasami.persisto.client.Persisto;
+import com.github.vigneshperiasami.persisto.client.ROperator;
 import com.github.vigneshperiasami.persisto.client.Subject;
 import com.github.vigneshperiasami.persisto.client.Subscriber;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
 
 public class SimpleClient {
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
     Operator<String, String> decoder = subscriber -> new Subscriber<String>() {
       @Override
       public void onNext(String data) {

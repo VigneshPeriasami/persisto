@@ -8,6 +8,7 @@ import com.github.vigneshperiasami.persisto.client.Subject;
 import com.github.vigneshperiasami.persisto.client.Subscriber;
 
 import javax.xml.bind.DatatypeConverter;
+import java.util.concurrent.Executors;
 
 public class SimpleClient {
   public static void main(String[] args) throws Exception {
@@ -31,13 +32,16 @@ public class SimpleClient {
 
     numberWriter.push(100);
 
-    reader.lift(decoder).listen(new Subscriber<String>() {
+    FlowableHelper.Scheduler scheduler = FlowableHelper.scheduler(Executors.newSingleThreadExecutor());
+    scheduler.subscribe(reader.lift(decoder), new Subscriber<String>() {
       @Override
       public void onNext(String data) {
         System.out.println(data);
         write(writer, "Roger that!!");
       }
     });
+
+    System.out.println("Hello there");
   }
 
   private static <T> void write(Subject<T> writer, T message) {

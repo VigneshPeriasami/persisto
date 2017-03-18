@@ -1,0 +1,9 @@
+namespace persisto.proto.message;
+
+table Message {
+  content:string;
+  receiver:int;
+  sender:int;
+}
+
+root_type Message;

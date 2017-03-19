@@ -27,7 +27,10 @@ const encode = (message) => {
 };
 
 const encodeOperatorFunc = (message) => {
-  return Buffer.from(encode(message));
+  message = encode(message);
+  const payloadLength = Buffer.allocUnsafe(4);
+  payloadLength.writeInt32BE(message.length, 0);
+  return Buffer.concat([payloadLength, Buffer.from(message)]);
 };
 
 const onConnection = (persisto) => {
@@ -35,7 +38,9 @@ const onConnection = (persisto) => {
   reader.listen((message) => console.log(message.content()));
 
   const writer = persisto.writeSubject().lift(encodeOperatorFunc);
-  writer.push("Connected to persisto");
+  writer.push("Connected to persisto!!!");
+  writer.push("Hello tom!!");
+  writer.push("Bye for now!!!");
 };
 
 Persisto.connect(5000, onConnection);

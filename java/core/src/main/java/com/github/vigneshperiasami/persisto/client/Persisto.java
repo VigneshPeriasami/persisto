@@ -2,8 +2,8 @@ package com.github.vigneshperiasami.persisto.client;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -69,17 +69,19 @@ public class Persisto implements AutoCloseable {
     return FlowableFactory.untilAlive(new Callable<FlowableFactory.PullFunc<ByteBuffer>>() {
       @Override
       public FlowableFactory.PullFunc<ByteBuffer> call() throws Exception {
-        final byte[] bytes = new byte[1024];
 
         return new FlowableFactory.PullFunc<ByteBuffer>() {
-          final InputStream inputStream = socket.getInputStream();
+          final DataInputStream inputStream = new DataInputStream(socket.getInputStream());
 
           @Override
           public ByteBuffer next() throws Exception {
-            if (inputStream.read(bytes) == -1) {
+            int readLen = inputStream.readInt();
+            if (readLen == -1) {
               throw new RuntimeException("End of stream");
             }
-            return ByteBuffer.wrap(bytes);
+            final byte[] full = new byte[readLen];
+            inputStream.readFully(full);
+            return ByteBuffer.wrap(full);
           }
 
           @Override

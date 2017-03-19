@@ -34,6 +34,11 @@ public class FlatBufferSample {
       public void onNext(ByteBuffer data) {
         stringSubscriber.onNext(Message.getRootAsMessage(data).content());
       }
+
+      @Override
+      public void onError(Throwable err) {
+        err.printStackTrace();
+      }
     };
   }
 

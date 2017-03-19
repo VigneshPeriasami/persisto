@@ -14,6 +14,14 @@ Persisto.readFlowable = (socket) => {
   });
 };
 
+Persisto.readFlowableBuffer = (socket) => {
+  return flowable((onNext) => {
+    socket.on("data", (chunk) => {
+      onNext(chunk);
+    });
+  });
+};
+
 Persisto.writeSubject = (socket) => {
   return subject((message) => {
     socket.write(message);
@@ -21,15 +29,12 @@ Persisto.writeSubject = (socket) => {
 };
 
 Persisto.create = (socket) => {
-  const writeSubject = () => {
-    return Persisto.writeSubject(socket);
-  };
-  const readFlowable = () => {
-    return Persisto.readFlowable(socket);
-  };
-
   return Object.assign({},
-    { writeSubject, readFlowable },
+    {
+      writeSubject: Persisto.writeSubject.bind(null, socket),
+      readFlowable: Persisto.readFlowable.bind(null, socket),
+      readFlowableBuffer: Persisto.readFlowableBuffer.bind(null, socket)
+    },
     { socket });
 };
 

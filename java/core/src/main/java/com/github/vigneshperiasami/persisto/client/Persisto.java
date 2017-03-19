@@ -3,9 +3,12 @@ package com.github.vigneshperiasami.persisto.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.Callable;
 
 public class Persisto implements AutoCloseable {
@@ -38,6 +41,18 @@ public class Persisto implements AutoCloseable {
     socket.close();
   }
 
+  public Subject<byte[]> writeSubjectByte() throws IOException {
+    return new Subject<byte[]>() {
+      final OutputStream outputStream = socket.getOutputStream();
+
+      @Override
+      public void push(byte[] message) throws Exception {
+        outputStream.write(message);
+        outputStream.flush();
+      }
+    };
+  }
+
   public Subject<String> writeSubject() throws IOException {
     return new Subject<String>() {
       final BufferedWriter writer = writer();
@@ -48,6 +63,31 @@ public class Persisto implements AutoCloseable {
         writer.flush();
       }
     };
+  }
+
+  public Flowable<ByteBuffer> readFlowableByte() throws IOException {
+    return FlowableFactory.untilAlive(new Callable<FlowableFactory.PullFunc<ByteBuffer>>() {
+      @Override
+      public FlowableFactory.PullFunc<ByteBuffer> call() throws Exception {
+        final byte[] bytes = new byte[1024];
+
+        return new FlowableFactory.PullFunc<ByteBuffer>() {
+          final InputStream inputStream = socket.getInputStream();
+
+          @Override
+          public ByteBuffer next() throws Exception {
+            if (inputStream.read(bytes) == -1) {
+              throw new RuntimeException("End of stream");
+            }
+            return ByteBuffer.wrap(bytes);
+          }
+
+          @Override
+          public void stop() {
+          }
+        };
+      }
+    });
   }
 
   public Flowable<String> readFlowable() throws IOException {

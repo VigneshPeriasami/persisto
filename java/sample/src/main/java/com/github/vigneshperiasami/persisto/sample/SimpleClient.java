@@ -23,7 +23,7 @@ public class SimpleClient {
     ROperator<Integer, String> intToString = String::valueOf;
 
     Persisto persisto = Persisto.connect("127.0.0.1", 5000);
-    Flowable<String> reader = persisto.readFlowable();
+    Flowable<String> reader = persisto.readFlowableLine();
 
     final Subject<String> writer = persisto.writeSubject()
         .lift(encoder);

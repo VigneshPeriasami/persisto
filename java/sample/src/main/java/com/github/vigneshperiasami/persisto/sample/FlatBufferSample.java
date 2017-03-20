@@ -17,7 +17,7 @@ public class FlatBufferSample {
     Persisto persisto = Persisto.connect("127.0.0.1", 5000);
 
     Subject<String> messageWriter = persisto.writeSubjectByte().lift(messageWriter());
-    Flowable<String> messageReader = persisto.readFlowableByte().lift(messageReader());
+    Flowable<String> messageReader = persisto.readFlowableFixedLength().lift(messageReader());
     messageWriter.push("Hello jerry");
 
     messageReader.listen(new Subscriber<String>() {

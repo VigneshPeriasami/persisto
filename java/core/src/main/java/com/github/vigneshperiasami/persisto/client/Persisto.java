@@ -9,25 +9,20 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.concurrent.Callable;
 
 public class Persisto implements AutoCloseable {
   private final Socket socket;
-  private final BufferedReader reader;
+  private final DataInputStream inputStream;
   private final BufferedWriter writer;
 
   private Persisto(Socket socket) throws IOException {
     this.socket = socket;
-    this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    this.inputStream = new DataInputStream(socket.getInputStream());
     this.writer =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
   }
 
   public static Persisto connect(String host, int port) throws IOException {
     return new Persisto(new Socket(host, port));
-  }
-
-  private BufferedReader reader() throws IOException {
-    return reader;
   }
 
   private BufferedWriter writer() throws IOException {
@@ -36,7 +31,7 @@ public class Persisto implements AutoCloseable {
 
   @Override
   public void close() throws IOException {
-    reader.close();
+    inputStream.close();
     writer.close();
     socket.close();
   }
@@ -65,54 +60,78 @@ public class Persisto implements AutoCloseable {
     };
   }
 
-  public Flowable<ByteBuffer> readFlowableByte() throws IOException {
-    return FlowableFactory.untilAlive(new Callable<FlowableFactory.PullFunc<ByteBuffer>>() {
+  public Flowable<DataInputStream> readFlowableInputStream() throws IOException {
+    return new Flowable<DataInputStream>() {
       @Override
-      public FlowableFactory.PullFunc<ByteBuffer> call() throws Exception {
-
-        return new FlowableFactory.PullFunc<ByteBuffer>() {
-          final DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-
-          @Override
-          public ByteBuffer next() throws Exception {
-            int readLen = inputStream.readInt();
-            if (readLen == -1) {
-              throw new RuntimeException("End of stream");
-            }
-            final byte[] full = new byte[readLen];
-            inputStream.readFully(full);
-            return ByteBuffer.wrap(full);
-          }
-
-          @Override
-          public void stop() {
-          }
-        };
+      public void listen(Subscriber<DataInputStream> subscriber) {
+        subscriber.onNext(inputStream);
       }
-    });
+    };
   }
 
-  public Flowable<String> readFlowable() throws IOException {
-    return FlowableFactory.untilAlive(new Callable<FlowableFactory.PullFunc<String>>() {
+  public Flowable<ByteBuffer> readFlowableFixedLength() throws IOException {
+    return readFlowableInputStream().lift(fixedLengthCodec());
+  }
+
+  public Flowable<String> readFlowableLine() throws IOException {
+    return readFlowableInputStream().lift(newLineCodec());
+  }
+
+  private static void safeClose(AutoCloseable closeable) {
+    try {
+      closeable.close();
+    } catch (Exception ignored) {
+    }
+  }
+
+  private static Operator<String, DataInputStream> newLineCodec() {
+    return new Operator<String, DataInputStream>() {
       @Override
-      public FlowableFactory.PullFunc<String> call() throws Exception {
-        final BufferedReader reader = reader();
-
-        return new FlowableFactory.PullFunc<String>() {
+      public Subscriber<DataInputStream> call(final Subscriber<String> stringSubscriber) {
+        return new Subscriber<DataInputStream>() {
           @Override
-          public String next() throws Exception {
-            return reader.readLine();
-          }
-
-          @Override
-          public void stop() {
+          public void onNext(DataInputStream data) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(data));
             try {
-              reader.close();
-            } catch (IOException ignored) {
+              while(stringSubscriber.isAlive()) {
+                stringSubscriber.onNext(reader.readLine());
+              }
+            } catch (Exception e) {
+              stringSubscriber.onError(e);
+            } finally {
+              safeClose(reader);
             }
           }
         };
       }
-    });
+    };
+  }
+
+  private static Operator<ByteBuffer, DataInputStream> fixedLengthCodec() {
+    return new Operator<ByteBuffer, DataInputStream>() {
+      @Override
+      public Subscriber<DataInputStream> call(final Subscriber<ByteBuffer> byteBufferSubscriber) {
+        return new Subscriber<DataInputStream>() {
+          @Override
+          public void onNext(DataInputStream data) {
+            try {
+              while (byteBufferSubscriber.isAlive()) {
+                int readLen = data.readInt();
+                if (readLen == -1) {
+                  throw new RuntimeException("End of Stream");
+                }
+                final byte[] full = new byte[readLen];
+                data.readFully(full);
+                byteBufferSubscriber.onNext(ByteBuffer.wrap(full));
+              }
+            } catch (Exception e) {
+              byteBufferSubscriber.onError(e);
+            } finally {
+              safeClose(data);
+            }
+          }
+        };
+      }
+    };
   }
 }

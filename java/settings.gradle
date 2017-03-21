@@ -1,2 +1,4 @@
 rootProject.name = 'persisto'
-include ':core', ':sample'
+include ':core', ':sample', ':sample-proto'
+include 'flatbuffers'
+

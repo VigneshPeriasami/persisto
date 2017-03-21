@@ -1,0 +1,15 @@
+group 'com.github.vigneshperiasami.persisto'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile project(":flatbuffers")
+}

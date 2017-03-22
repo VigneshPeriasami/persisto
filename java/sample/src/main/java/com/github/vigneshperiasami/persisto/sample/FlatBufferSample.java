@@ -28,21 +28,6 @@ public class FlatBufferSample {
     });
   }
 
-  public interface FuncB<T> {
-    boolean call(T data);
-  }
-
-  public static <T> Operator<T, T> filter(FuncB<T> func) {
-    return subscriber -> new Subscriber<T>() {
-      @Override
-      public void onNext(T data) {
-        if (func.call(data)) {
-          subscriber.onNext(data);
-        }
-      }
-    };
-  }
-
   public static Operator<String, ByteBuffer> messageReader() {
     return stringSubscriber -> new Subscriber<ByteBuffer>() {
       @Override

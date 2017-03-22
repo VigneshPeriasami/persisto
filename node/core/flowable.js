@@ -9,8 +9,18 @@ class Flowable {
     return new OperatorFlowable(this, operatorFunc);
   }
 
-  listen(subscriber) {
-    this.listenFunc(subscriber);
+  filter(filterFunc) {
+    return new OperatorFlowable(this, (onNext) => {
+      return (data) => {
+        if (filterFunc(data)) {
+          onNext(data)
+        }
+      }
+    })
+  }
+
+  listen(onNext) {
+    this.listenFunc(onNext);
   }
 }
 
@@ -21,8 +31,8 @@ class OperatorFlowable extends Flowable {
     this.operatorFunc = operatorFunc;
   }
 
-  listen(subscriber) {
-    this.flowable.listen(this.operatorFunc(subscriber));
+  listen(onNext) {
+    this.flowable.listen(this.operatorFunc(onNext));
   }
 }
 

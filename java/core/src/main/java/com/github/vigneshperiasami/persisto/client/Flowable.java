@@ -7,6 +7,14 @@ public abstract class Flowable<T> {
     return new OperatorFlowable<>(this, operator);
   }
 
+  private void forwardSafely(T data, Subscriber<T> subscriber) {
+    try {
+      subscriber.onNext(data);
+    } catch (Exception e) {
+      subscriber.onError(e);
+    }
+  }
+
   public Flowable<T> filter(final FuncB<T> filterFunc) {
     return new OperatorFlowable<>(this, new Operator<T, T>() {
       @Override
@@ -15,7 +23,7 @@ public abstract class Flowable<T> {
           @Override
           public void onNext(T data) {
             if (filterFunc.call(data)) {
-              nSubscriber.onNext(data);
+              forwardSafely(data, nSubscriber);
             }
           }
 

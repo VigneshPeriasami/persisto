@@ -1,10 +1,12 @@
 package com.github.vigneshperiasami.persisto;
 
 import com.github.vigneshperiasami.persisto.client.Flowable;
+import com.github.vigneshperiasami.persisto.client.Func;
 import com.github.vigneshperiasami.persisto.client.Operator;
 import com.github.vigneshperiasami.persisto.client.Subscriber;
 import org.junit.Test;
 
+import static com.github.vigneshperiasami.persisto.client.Subscriber.create;
 import static org.junit.Assert.assertEquals;
 
 public class OperatorFlowableTest {
@@ -26,17 +28,22 @@ public class OperatorFlowableTest {
           public void onNext(Integer data) {
             subscriber.onNext(String.valueOf(data));
           }
+
+          @Override
+          public void onError(Throwable err) {
+            subscriber.onError(err);
+          }
         };
       }
     });
 
     final StringBuilder result = new StringBuilder();
-    reader.listen(new Subscriber<String>() {
+    reader.listen(create(new Func<String>() {
       @Override
-      public void onNext(String data) {
+      public void call(String data) {
         result.append(data);
       }
-    });
+    }));
     assertEquals("12", result.toString());
   }
 
@@ -54,6 +61,11 @@ public class OperatorFlowableTest {
           @Override
           public void onNext(String data) {
             subscriber.onNext(data + " ,");
+          }
+
+          @Override
+          public void onError(Throwable err) {
+            subscriber.onError(err);
           }
         };
       }

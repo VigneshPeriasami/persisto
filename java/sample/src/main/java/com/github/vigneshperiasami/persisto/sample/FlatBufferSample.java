@@ -11,6 +11,8 @@ import persisto.proto.message.Message;
 
 import java.nio.ByteBuffer;
 
+import static com.github.vigneshperiasami.persisto.client.Subscriber.create;
+
 public class FlatBufferSample {
 
   public static void main(String[] args) throws Exception {
@@ -20,12 +22,7 @@ public class FlatBufferSample {
     Flowable<String> messageReader = persisto.readFlowableFixedLength().lift(messageReader());
     messageWriter.push("Hello jerry");
 
-    messageReader.listen(new Subscriber<String>() {
-      @Override
-      public void onNext(String data) {
-        System.out.println(data);
-      }
-    });
+    messageReader.listen(create(System.out::println));
   }
 
   public static Operator<String, ByteBuffer> messageReader() {

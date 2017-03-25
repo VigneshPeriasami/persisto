@@ -10,12 +10,19 @@ import com.github.vigneshperiasami.persisto.client.Subscriber;
 import javax.xml.bind.DatatypeConverter;
 import java.util.concurrent.Executors;
 
+import static com.github.vigneshperiasami.persisto.client.Subscriber.create;
+
 public class SimpleClient {
   public static void main(String[] args) throws Exception {
     Operator<String, String> decoder = subscriber -> new Subscriber<String>() {
       @Override
       public void onNext(String data) {
         subscriber.onNext(new String(DatatypeConverter.parseBase64Binary(data)));
+      }
+
+      @Override
+      public void onError(Throwable err) {
+        subscriber.onError(err);
       }
     };
 
@@ -33,13 +40,10 @@ public class SimpleClient {
     numberWriter.push(100);
 
     FlowableHelper.Scheduler scheduler = FlowableHelper.scheduler(Executors.newSingleThreadExecutor());
-    scheduler.subscribe(reader.lift(decoder), new Subscriber<String>() {
-      @Override
-      public void onNext(String data) {
-        System.out.println(data);
-        write(writer, "Roger that!!");
-      }
-    });
+    scheduler.subscribe(reader.lift(decoder), create(data -> {
+      System.out.println(data);
+      write(writer, "Roger that!!");
+    }));
 
     System.out.println("Hello there");
   }

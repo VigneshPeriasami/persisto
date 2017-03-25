@@ -61,12 +61,12 @@ public class Persisto implements AutoCloseable {
   }
 
   public Flowable<DataInputStream> readFlowableInputStream() throws IOException {
-    return new Flowable<DataInputStream>() {
+    return new Flowable<>(new Flowable.OnSubscribe<DataInputStream>() {
       @Override
-      public void listen(Subscriber<DataInputStream> subscriber) {
+      public void call(Subscriber<DataInputStream> subscriber) {
         subscriber.onNext(inputStream);
       }
-    };
+    });
   }
 
   public Flowable<ByteBuffer> readFlowableFixedLength() throws IOException {
@@ -88,9 +88,9 @@ public class Persisto implements AutoCloseable {
     return new Operator<String, DataInputStream>() {
       @Override
       public Subscriber<DataInputStream> call(final Subscriber<String> stringSubscriber) {
-        return new Subscriber<DataInputStream>() {
+        return Subscriber.create(new Func<DataInputStream>() {
           @Override
-          public void onNext(DataInputStream data) {
+          public void call(DataInputStream data) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(data));
             try {
               while(stringSubscriber.isAlive()) {
@@ -102,7 +102,7 @@ public class Persisto implements AutoCloseable {
               safeClose(reader);
             }
           }
-        };
+        });
       }
     };
   }
@@ -111,9 +111,9 @@ public class Persisto implements AutoCloseable {
     return new Operator<ByteBuffer, DataInputStream>() {
       @Override
       public Subscriber<DataInputStream> call(final Subscriber<ByteBuffer> byteBufferSubscriber) {
-        return new Subscriber<DataInputStream>() {
+        return Subscriber.create(new Func<DataInputStream>() {
           @Override
-          public void onNext(DataInputStream data) {
+          public void call(DataInputStream data) {
             try {
               while (byteBufferSubscriber.isAlive()) {
                 int readLen = data.readInt();
@@ -130,7 +130,7 @@ public class Persisto implements AutoCloseable {
               safeClose(data);
             }
           }
-        };
+        });
       }
     };
   }

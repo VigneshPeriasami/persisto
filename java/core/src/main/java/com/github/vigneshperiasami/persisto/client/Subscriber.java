@@ -28,7 +28,7 @@ public abstract class Subscriber<T> {
     return new DSubscriber<>(onNext, onError);
   }
 
-  final boolean isAlive() {
+  public boolean isAlive() {
     return isAlive.get();
   }
 }

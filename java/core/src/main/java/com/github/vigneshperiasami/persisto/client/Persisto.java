@@ -61,12 +61,12 @@ public class Persisto implements AutoCloseable {
   }
 
   public Flowable<DataInputStream> readFlowableInputStream() throws IOException {
-    return new Flowable<DataInputStream>() {
+    return new Flowable<>(new Flowable.OnSubscribe<DataInputStream>() {
       @Override
-      public void listen(Subscriber<DataInputStream> subscriber) {
+      public void call(Subscriber<DataInputStream> subscriber) {
         subscriber.onNext(inputStream);
       }
-    };
+    });
   }
 
   public Flowable<ByteBuffer> readFlowableFixedLength() throws IOException {

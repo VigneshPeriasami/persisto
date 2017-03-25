@@ -8,6 +8,7 @@ const Persisto = {};
 
 Persisto.readFlowable = (socket) => {
   return flowable((onNext) => {
+    // todo: access to stop the subscription
     socket.on("data", (chunk) => {
       onNext(chunk.toString());
     });

@@ -17,5 +17,6 @@ class DSubscriber<T> extends Subscriber<T> {
   @Override
   public void onError(Throwable err) {
     onError.call(err);
+    unsubscribe();
   }
 }

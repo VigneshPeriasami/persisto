@@ -14,5 +14,21 @@
     "persisto-js",
     "socket"
   ],
+  "devDependencies": {
+    "@hackito/eslint-config-default-rules": "0.0.3",
+    "babel-cli": "^6.24.0",
+    "babel-eslint": "^7.2.1",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-register": "^6.24.0",
+    "chai": "^3.5.0",
+    "eslint-plugin-flowtype": "^2.30.4",
+    "flow-bin": "^0.42.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-eslint": "^3.0.1",
+    "gulp-mocha": "^4.1.0",
+    "gulp-shell": "^0.6.3"
+  },
   "license": "Apache software license, Version 2.0"
 }

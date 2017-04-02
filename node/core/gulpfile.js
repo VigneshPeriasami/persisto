@@ -19,7 +19,7 @@ gulp.task("build", () => {
 });
 
 gulp.task("eslint", () => {
-  return gulp.src(["**/*.js", "!node_modules/**", "!decls/**"])
+  return gulp.src(["**/*.js", "!node_modules/**", "!flow-typed/**", "!build/**", "!decls/**"])
     .pipe(eslint())
     .pipe(eslint.format())
     .pipe(eslint.failAfterError());

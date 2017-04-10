@@ -22,8 +22,8 @@ export class Flowable<T> {
     });
   }
 
-  listen(onNext: funcOnNext<T>) {
-    this.listenFunc(onNext);
+  listen(onNext: funcOnNext<T>, onError: funcOnNext<Error>, onComplete: funcOnNext<void>) {
+    this.listenFunc(onNext, onError, onComplete);
   }
 }
 
@@ -37,8 +37,8 @@ class OperatorFlowable<C, N> extends Flowable<N> {
     this.operatorFunc = operatorFunc;
   }
 
-  listen(onNext: funcOnNext<N>) {
-    this.flowable.listen(this.operatorFunc(onNext));
+  listen(onNext: funcOnNext<N>, onError: funcOnNext<Error>, onComplete: funcOnNext<void>) {
+    this.flowable.listen(this.operatorFunc(onNext), onError, onComplete);
   }
 }
 

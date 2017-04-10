@@ -1,5 +1,7 @@
 // @flow
 import type {Flowable} from "../src/flowable";
+import flowable from "../src/flowable";
+
 import {describe, it} from "mocha"
 import {expect} from "chai";
 import {recorder, fromArray} from "./helper";
@@ -52,5 +54,19 @@ describe("Flowable", () => {
 
     expect(recorderObj.rec).to.have.lengthOf(5);
     expect(recorderObj.rec).to.eql([2, 4, 6, 8, 10]);
+  });
+
+  it("error pipeline", () => {
+    const errorFlowable: Flowable<string> = flowable(
+      (onNext: funcOnNext<string>, onError: funcOnNext<Error>) => {
+        onError(new Error("fake error"));
+      }
+    );
+    const resultRecorder: RecObjType<string> = recorder();
+    const errRecorder: RecObjType<Error> = recorder();
+    errorFlowable.listen(resultRecorder.onNext, errRecorder.onNext);
+
+    expect(errRecorder.rec).to.have.lengthOf(1);
+    expect(errRecorder.rec[0]).to.be.a("Error");
   });
 });

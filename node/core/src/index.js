@@ -5,6 +5,13 @@ import net, {Socket} from "net";
 import flowable, {Flowable} from "./flowable";
 import subject, {Subject} from "./subject";
 
+export type PersistoType = {
+  writeSubject: () => Subject<Buffer>,
+  readFlowable: () => Flowable<string>,
+  readFlowableBuffer: () => Flowable<Buffer>,
+  socket: Socket
+};
+
 const PersistoFactory = {};
 
 PersistoFactory.readFlowable = (socket: Socket): Flowable<string> => {
@@ -30,7 +37,7 @@ PersistoFactory.writeSubject = (socket: Socket): Subject<Buffer> => {
   });
 };
 
-PersistoFactory.create = (socket: Socket): Persisto => {
+PersistoFactory.create = (socket: Socket): PersistoType => {
   return {
     writeSubject: PersistoFactory.writeSubject.bind(null, socket),
     readFlowable: PersistoFactory.readFlowable.bind(null, socket),
@@ -39,7 +46,7 @@ PersistoFactory.create = (socket: Socket): Persisto => {
   };
 };
 
-PersistoFactory.connect = (port: number, onConnect: (obj: Persisto) => void) => {
+PersistoFactory.connect = (port: number, onConnect: (obj: PersistoType) => void) => {
   net.createServer((socket: Socket) => {
     onConnect(PersistoFactory.create(socket));
   }).listen(port);

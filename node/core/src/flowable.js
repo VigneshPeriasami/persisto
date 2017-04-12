@@ -1,6 +1,8 @@
 // @flow
 "use strict";
 
+const funcStub = () => {};
+
 export class Flowable<T> {
   listenFunc: funcListen<T>;
 
@@ -22,7 +24,8 @@ export class Flowable<T> {
     });
   }
 
-  listen(onNext: funcOnNext<T>, onError: funcOnNext<Error>, onComplete: funcOnNext<void>) {
+  listen(onNext: funcOnNext<T>, onError: funcOnNext<Error> = funcStub,
+      onComplete: funcOnNext<void> = funcStub) {
     this.listenFunc(onNext, onError, onComplete);
   }
 }

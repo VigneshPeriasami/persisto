@@ -8,3 +8,8 @@ declare function funcFilter<T>(message: T): boolean;
 
 declare function funcPush<T>(message: T): void;
 declare function funcSubjectOperator<T, N>(message: N): T;
+
+declare type SubscriptionType = {
+  unsubscribed: boolean;
+  unsubscribe: () => void;
+};

@@ -2,6 +2,39 @@
 "use strict";
 
 const funcStub = () => {};
+const errStub = (err: Error) => { throw err };
+
+const safeWrapOnNext = <T>(onNext: funcOnNext<T>, onError: funcOnNext<Error>): funcOnNext<T> => {
+  return (d: T, unsubscribe: () => void) => {
+    try {
+      onNext(d, unsubscribe);
+    } catch (err) {
+      onError(err);
+      unsubscribe();
+    }
+  };
+};
+
+export class Subscription {
+  unsubscribed: boolean;
+  onUnsubscribe: () => void;
+
+  constructor(onUnsubscribe: () => void = funcStub) {
+    this.unsubscribed = false;
+    this.onUnsubscribe = onUnsubscribe;
+  }
+
+  unsubscribeThunk(): () => void {
+    return () => {
+      this.unsubscribe();
+    };
+  }
+
+  unsubscribe() {
+    this.unsubscribed = true;
+    this.onUnsubscribe();
+  }
+}
 
 export class Flowable<T> {
   listenFunc: funcListen<T>;
@@ -24,9 +57,9 @@ export class Flowable<T> {
     });
   }
 
-  listen(onNext: funcOnNext<T>, onError: funcOnNext<Error> = funcStub,
-      onComplete: funcOnNext<void> = funcStub) {
-    this.listenFunc(onNext, onError, onComplete);
+  listen(onNext: funcOnNext<T>, onError: funcOnNext<Error> = errStub,
+      onComplete: funcOnNext<void> = funcStub): Subscription {
+    return this.listenFunc(safeWrapOnNext(onNext, onError), onError, onComplete);
   }
 }
 
@@ -40,8 +73,9 @@ class OperatorFlowable<C, N> extends Flowable<N> {
     this.operatorFunc = operatorFunc;
   }
 
-  listen(onNext: funcOnNext<N>, onError: funcOnNext<Error>, onComplete: funcOnNext<void>) {
-    this.flowable.listen(this.operatorFunc(onNext), onError, onComplete);
+  listen(onNext: funcOnNext<N>, onError: funcOnNext<Error>,
+      onComplete: funcOnNext<void>): Subscription {
+    return this.flowable.listen(this.operatorFunc(onNext), onError, onComplete);
   }
 }
 

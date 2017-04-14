@@ -1,11 +1,13 @@
 // @flow
-import type {Flowable} from "../src/flowable";
+import type {Flowable, Subscription} from "../src/flowable";
 import flowable from "../src/flowable";
 
 import {describe, it} from "mocha"
 import {expect} from "chai";
 import {recorder, fromArray} from "./helper";
 import type {RecObjType} from "./helper";
+
+const throwError = (err: Error) => { throw err; };
 
 describe("Flowable", () => {
   it("listen all emitted flowable values", () => {
@@ -76,9 +78,12 @@ describe("Flowable", () => {
       expect(errRecorder.rec[0].message).to.equal("fake exception");
     });
 
-    it("ignore if no error callback", () => {
+    it("do not ignore if no error callback", () => {
       const resultRecorder: RecObjType<string> = recorder();
-      flowable(fakeErrorFlow).listen(resultRecorder);
+      const flowThunk = () => {
+        flowable(fakeErrorFlow).listen(resultRecorder);
+      };
+      expect(flowThunk).to.throw(Error);
       expect(resultRecorder.rec).to.have.lengthOf(0);
     });
 
@@ -93,6 +98,54 @@ describe("Flowable", () => {
 
       expect(errRecorder.rec).to.have.lengthOf(1);
       expect(errRecorder.rec[0]).to.be.a("Error");
+    });
+
+    it("catch onNext errors", () => {
+      const errRecorder: RecObjType<Error> = recorder();
+      fromArray(["one", "two"]).listen(() => {
+        throw Error("unhandled onNext exception");
+      }, errRecorder.onNext);
+
+      expect(errRecorder.rec).to.have.lengthOf(1);
+      expect(errRecorder.rec[0]).to.be.a("Error");
+      expect(errRecorder.rec[0].message).to.equal("unhandled onNext exception");
+    });
+  });
+
+  describe("Subscription", () => {
+    it("receive subscription with onNext", () => {
+      fromArray(["one", "two"]).listen((data: string, unsubscribe: () => void) => {
+        expect(unsubscribe).to.not.be.undefined;
+        expect(unsubscribe).to.be.a("Function");
+      }, throwError);
+    });
+
+    it("stop after unsubscribe call", () => {
+      const result: Array<string> = [];
+      fromArray(["one", "two", "done", "none"]).listen((data: string, unsubscribe: () => void) => {
+        if (data == "done") {
+          unsubscribe();
+        }
+        result.push(data);
+      });
+      expect(result).to.have.lengthOf(3);
+    });
+
+    it("unsubscribe on error", () => {
+      const result: Array<string> = [];
+      const errRecorder: RecObjType<Error> = recorder();
+      const subscription: Subscription = fromArray(["one", "two", "done", "none"])
+        .listen((data: string) => {
+          result.push(data);
+          if (data == "done") {
+            throw Error("fake exception");
+          }
+        }, errRecorder.onNext);
+
+      expect(result).to.have.lengthOf(3);
+      expect(errRecorder.rec).to.have.lengthOf(1);
+      expect(errRecorder.rec[0]).to.be.a("Error");
+      expect(subscription.unsubscribed).to.be.true;
     });
   });
 });

@@ -1,5 +1,5 @@
 // @flow
-import flowable, {Flowable} from "../src/flowable";
+import flowable, {Flowable, Subscription} from "../src/flowable";
 
 export type RecObjType<T> = {
   rec: Array<T>,
@@ -17,9 +17,14 @@ export const recorder = <T>(): RecObjType<T> => {
 };
 
 export const fromArray = <T>(array: Array<T>): Flowable<T> => {
-  return flowable((onNext: funcOnNext<T>) => {
-    array.forEach((item: T) => {
-      onNext(item);
-    });
+  return flowable((onNext: funcOnNext<T>): Subscription => {
+    const subscription = new Subscription();
+    for (let i = 0; i < array.length; i++) {
+      if (subscription.unsubscribed) {
+        break;
+      }
+      onNext(array[i], subscription.unsubscribeThunk());
+    }
+    return subscription;
   });
 };

@@ -1,4 +1,4 @@
-declare function funcOnNext<T>(message: T): void;
+declare function funcOnNext<T>(message: T, unsubscribe?: () => void): void;
 declare function funcListen<T>(onNext: funcOnNext<T>, onError: funcOnNext<Error>, onComplete: funcOnNext<void>): void;
 
 declare function funcOperator<T, O>(onNext: funcOnNext<T>): funcOnNext<O>;

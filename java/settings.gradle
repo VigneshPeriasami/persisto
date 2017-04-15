@@ -1,4 +1,3 @@
 rootProject.name = 'persisto'
 include ':core', ':sample', ':sample-proto'
 include 'flatbuffers'
-

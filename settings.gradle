@@ -1,0 +1,5 @@
+rootProject.name = 'persisto-parent'
+rootProject.projectDir = new File(settingsDir, "java/")
+
+include ':core'
+project(':core').projectDir = new File(settingsDir, 'java/core')
